@@ -1,17 +1,10 @@
 #! /usr/bin/env python
 
 from setuptools import setup, Command
-from setuptools.command.test import test as TestCommand
 from subprocess import check_call
 from multiprocessing import cpu_count
 from distutils.spawn import find_executable
 import cpplint as cpplint
-
-class Test(TestCommand):
-    def run_tests(self):
-        check_call(('./cpplint_unittest.py'))
-        check_call(('./cpplint_clitest.py'))
-
 
 class Cmd(Command):
     user_options = [
@@ -55,6 +48,10 @@ class Format(Cmd):
         self.execute('--parallel', '--in-place', 'cpplint.py')
 
 
+with open('test-requirements') as f:
+    test_required = f.read().splitlines()
+
+
 setup(name='cpplint',
       version=cpplint.__VERSION__,
       py_modules=['cpplint'],
@@ -86,15 +83,14 @@ setup(name='cpplint',
       description='Automated checker to ensure C++ files follow Google\'s style guide',
       long_description=open('README.rst').read(),
       license='BSD-3-Clause',
+      setup_requires=[
+          "pytest-runner"
+      ],
+      tests_require=test_required,
       extras_require={
-        'dev': [
-            'pylint',
-            'flake8',
-            'yapf',
-        ]
+        'dev': test_required
       },
       cmdclass={
-        'test': Test,
         'lint': Lint,
         'format': Format
       })
