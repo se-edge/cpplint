@@ -3666,8 +3666,7 @@ class CpplintTest(CpplintTestBase):
              public slots:
               void bar();
             };"""),
-        'Weird number of spaces at line-start.  '
-        'Are you using a 2-space indent?  [whitespace/indent] [3]')
+        '')
     self.TestMultiLineLint(
         TrimExtraIndent('''
             static const char kRawString[] = R"("
