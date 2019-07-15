@@ -4575,7 +4575,7 @@ def CheckStyle(filename, clean_lines, linenum, file_extension, nesting_state,
   # if(match($0, " <<")) complain = 0;
   # if(match(prev, " +for \\(")) complain = 0;
   # if(prevodd && match(prevprev, " +for \\(")) complain = 0;
-  scope_or_label_pattern = r'\s*(\w+|private slots)\s*:\s*\\?$'
+  scope_or_label_pattern = r'\s*(\w+|(public|private|protected) slots)\s*:\s*\\?$'
   classinfo = nesting_state.InnermostClass()
   initial_spaces = 0
   cleansed_line = clean_lines.elided[linenum]
