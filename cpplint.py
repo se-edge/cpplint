@@ -5658,7 +5658,7 @@ _re_pattern_templates = []
 for _header, _templates in _HEADERS_CONTAINING_TEMPLATES:
   for _template in _templates:
     _re_pattern_templates.append(
-        (re.compile(r'(\<|\b)' + _template + r'\s*\<'),
+        (re.compile(r'(?:(std::)|(\s)|^)(\<|\b)' + _template + r'\s*\<'),
          _template + '<>',
          _header))
 
