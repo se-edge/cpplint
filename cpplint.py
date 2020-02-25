@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Copyright (c) 2009 Google Inc. All rights reserved.
 #
@@ -6094,17 +6094,7 @@ def FlagCxx11Features(filename, clean_lines, linenum, error):
           ('C++ TR1 headers such as <%s> are unapproved.') % include.group(1))
 
   # Flag unapproved C++11 headers.
-  if include and include.group(1) in ('cfenv',
-                                      'condition_variable',
-                                      'fenv.h',
-                                      'future',
-                                      'mutex',
-                                      'thread',
-                                      'chrono',
-                                      'ratio',
-                                      'regex',
-                                      'system_error',
-                                     ):
+  if include and include.group(1) in ('cfenv', 'fenv.h'):
     error(filename, linenum, 'build/c++11', 5,
           ('<%s> is an unapproved C++11 header.') % include.group(1))
 
