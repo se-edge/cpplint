@@ -710,6 +710,8 @@ def GetNonHeaderExtensions():
   return GetAllExtensions().difference(GetHeaderExtensions())
 
 
+__nolint_bock = False
+
 
 def ParseNolintSuppressions(filename, raw_line, linenum, error):
   """Updates the global list of line error-suppressions.
@@ -724,23 +726,40 @@ def ParseNolintSuppressions(filename, raw_line, linenum, error):
     linenum: int, the number of the current line.
     error: function, an error handler.
   """
-  matched = Search(r'\bNOLINT(NEXTLINE)?\b(\([^)]+\))?', raw_line)
+  global __nolint_bock
+  if not __nolint_bock:
+      matched = Search(r'\bNOLINT(NEXTLINE)?\b(\([^)]+\))?', raw_line)
+      if matched:
+        if matched.group(1):
+          suppressed_line = linenum + 1
+        else:
+          suppressed_line = linenum
+        category = matched.group(2)
+        if category in (None, '(*)'):  # => "suppress all"
+          _error_suppressions.setdefault(None, set()).add(suppressed_line)
+        else:
+          if category.startswith('(') and category.endswith(')'):
+            category = category[1:-1]
+            if category in _ERROR_CATEGORIES:
+              _error_suppressions.setdefault(category, set()).add(suppressed_line)
+            elif category not in _LEGACY_ERROR_CATEGORIES:
+              error(filename, linenum, 'readability/nolint', 5,
+                    'Unknown NOLINT error category: %s' % category)
+  else: # within NOLINT-BLOCK
+    _error_suppressions.setdefault(None, set()).add(linenum)
+
+  # Add NOLINT-BEGIN/NOLINT-END support
+  # TODO(anyone) add per-category blocks
+  matched = Search(r'\bNOLINT-(BEGIN|END)', raw_line)
   if matched:
-    if matched.group(1):
-      suppressed_line = linenum + 1
-    else:
-      suppressed_line = linenum
-    category = matched.group(2)
-    if category in (None, '(*)'):  # => "suppress all"
-      _error_suppressions.setdefault(None, set()).add(suppressed_line)
-    else:
-      if category.startswith('(') and category.endswith(')'):
-        category = category[1:-1]
-        if category in _ERROR_CATEGORIES:
-          _error_suppressions.setdefault(category, set()).add(suppressed_line)
-        elif category not in _LEGACY_ERROR_CATEGORIES:
-          error(filename, linenum, 'readability/nolint', 5,
-                'Unknown NOLINT error category: %s' % category)
+    if matched.group(1) == 'BEGIN':
+      if __nolint_bock is True:
+        error(filename, linenum, 'readability/nolint', 6,
+              'Unclosed NOLINT block: %s' % category)
+      else:
+        __nolint_bock = True
+    else: # must be END
+      __nolint_bock = False
 
 
 def ProcessGlobalSuppresions(lines):
